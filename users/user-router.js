@@ -3,6 +3,7 @@ const express = require("express")
 const usersModel = require("./user-model")
 const jwt = require("jsonwebtoken")
 const secrets = require("../config/secrets")
+const restricted = require("../middleware/restricted")
 
 const router = express.Router()
 
@@ -20,26 +21,14 @@ function generateToken(user){
     return jwt.sign(payload, secrets.jwtSecret, options)
 }
 
-// function restricted() {
-//   return (req, res, next) => {
-//     if (!req.session || !req.session.user) {
-//       return res.status(401).json({
-//         message: "Invalid credentials",
-//       })
-//     }
-//     next()
-//   }
-// }
-
-// router.get("/users", restricted(), async (req, res, next) => {
-//   try {
-//     const users = await usersModel.find()
-    
-//     res.json(users)
-//   } catch (err) {
-//     next(err)
-//   }
-// })
+router.get("/users", restricted(), async (req, res, next) => {
+  try {
+    const users = await usersModel.find()
+    res.json(users)
+  } catch (err) {
+    next(err)
+  }
+})
 
 router.post("/register", async (req, res, next) => {
     try {
@@ -56,10 +45,10 @@ router.post("/login", async (req, res, next) => {
         const { username, password } = req.body
         const user = await usersModel.findBy({ username }).first()
         const passwordValid = await bcrypt.compare(password, user.password)
-
+      
         if (user && passwordValid) {
             const token = generateToken(user);
-    
+            
           res.status(200).json({
             message: `Welcome ${user.username}!`,
             token,

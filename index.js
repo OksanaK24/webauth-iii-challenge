@@ -1,6 +1,6 @@
 const express = require("express")
 const helmet = require("helmet")
-// const dbConfig = require("./data/dbConfig")
+const dbConfig = require("./data/dbConfig")
 const usersRouter = require("./users/user-router")
 
 const server = express()
